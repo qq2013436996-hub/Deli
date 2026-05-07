@@ -1,0 +1,151 @@
+---
+import {sanityClient} from 'sanity:client'
+import MainLayout from '../../layouts/MainLayout.astro'
+import ProductListing from '../../components/ProductListing.astro'
+import type {ProductCard} from '../../components/ProductListing.astro'
+import {assignCategoryPathSlugs} from '../../lib/slugify'
+
+type ProductRow = {
+  title: string | null
+  slug: string | null
+  imageUrl: string | null
+  imageAlt: string | null
+  price: number | null
+  updatedAt: string | null
+}
+
+type CategoryPathRow = {_id: string; title: string | null; slug: string | null}
+
+export async function getStaticPaths() {
+  const rows = await sanityClient.fetch<CategoryPathRow[]>(
+    `*[_type == "productCategory"] | order(title asc) { _id, title, "slug": slug.current }`,
+  )
+
+  return assignCategoryPathSlugs(rows ?? []).map((r) => ({
+    params: {slug: r.pathSlug},
+    props: {categoryId: r._id},
+  }))
+}
+
+interface Props {
+  categoryId: string
+}
+
+const {categoryId} = Astro.props
+
+const categoryData = await sanityClient.fetch<{
+  title: string | null
+  description: string | null
+  products: ProductRow[] | null
+} | null>(
+  `*[_type == "productCategory" && _id == $id][0]{
+    title,
+    description,
+    "products": *[_type == "product" && defined(slug.current) && references(^._id)] | order(_updatedAt desc) {
+      title,
+      "slug": slug.current,
+      "imageUrl": mainImage.asset->url,
+      "imageAlt": mainImage.alt,
+      price,
+      "updatedAt": _updatedAt
+    }
+  }`,
+  {id: categoryId},
+)
+
+if (!categoryData?.title) {
+  return Astro.redirect('/', 302)
+}
+
+const products: ProductCard[] = (categoryData.products ?? [])
+  .filter((p): p is ProductRow & {slug: string} => typeof p.slug === 'string' && p.slug.length > 0)
+  .map((p) => ({
+    title: p.title,
+    slug: p.slug,
+    imageUrl: p.imageUrl,
+    imageAlt: p.imageAlt,
+    categoryName: categoryData.title,
+    price: p.price ?? null,
+    updatedAt: p.updatedAt ?? null,
+  }))
+
+const pageTitle = `${categoryData.title} | Car Light`
+---
+
+<MainLayout title={pageTitle}>
+  <style>
+    .category-page-header {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 48px 20px 8px;
+    }
+    .category-page-header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #111827;
+      margin: 0 0 8px;
+    }
+    .category-page-header p {
+      color: #6b7280;
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+    .category-page-header a {
+      color: var(--primary-color);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .category-page-header a:hover {
+      text-decoration: underline;
+    }
+    .category-metrics {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      color: #111827;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .pill .muted {
+      color: #64748b;
+      font-weight: 800;
+      border-left: 1px solid #e5e7eb;
+      padding-left: 8px;
+    }
+  </style>
+
+  <div class="category-page-header">
+    <h1>{categoryData.title}</h1>
+    <p>{categoryData.description || 'Browse products in this category and open a product for full details.'}</p>
+    <p style="margin-top: 10px;">
+      <a href="/">← All categories</a>
+      {' · '}
+      <a href="/products">View all products</a>
+    </p>
+    <div class="category-metrics" aria-label="Category summary">
+      <span class="pill">
+        Products <span class="muted">{products.length}</span>
+      </span>
+      <span class="pill">
+        Updated <span class="muted">Newest first</span>
+      </span>
+    </div>
+  </div>
+
+  <ProductListing
+    products={products}
+    showPageHeader={false}
+    compact={true}
+  />
+</MainLayout>

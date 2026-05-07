@@ -1,0 +1,471 @@
+---
+import MainLayout from '../layouts/MainLayout.astro'
+import {sanityClient} from 'sanity:client'
+
+const url = new URL(Astro.request.url)
+const product = url.searchParams.get('product') || ''
+const settings = await sanityClient.fetch<{
+  companyName: string | null
+  contactEmail: string | null
+  contactPhone: string | null
+} | null>(`*[_type=="siteSettings"][0]{
+  companyName,
+  contactEmail,
+  contactPhone
+}`)
+
+const companyName = settings?.companyName?.trim() || 'Car Light'
+const contactEmail = settings?.contactEmail?.trim() || 'info@example.com'
+const contactPhone = settings?.contactPhone?.trim() || '+86 000 0000 0000'
+---
+
+<MainLayout title={`Contact Us | ${companyName}`}>
+  <style>
+    .page-shell {
+      max-width: 1180px;
+      margin: 70px auto 84px;
+      padding: 0 20px;
+    }
+
+    .hero-intro {
+      margin-bottom: 24px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .hero-intro.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: #475569;
+      background: #fff;
+    }
+    .hero-intro h1 {
+      margin: 0 0 10px;
+      font-size: clamp(1.9rem, 3.7vw, 2.8rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      color: #0f172a;
+    }
+    .hero-intro p {
+      margin: 0;
+      color: #64748b;
+      line-height: 1.75;
+      max-width: 64ch;
+      font-size: 1.01rem;
+    }
+
+    .quote-container {
+      display: grid;
+      grid-template-columns: 0.95fr 1.35fr;
+      gap: 26px;
+    }
+
+    .info-side {
+      display: grid;
+      gap: 16px;
+    }
+    .info-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 18px 18px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.05);
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .info-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .info-card h3 {
+      margin: 0 0 10px;
+      color: #0f172a;
+      font-size: 1rem;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+    }
+    .info-card p,
+    .info-card li {
+      color: #64748b;
+      font-size: 0.95rem;
+      line-height: 1.75;
+    }
+    .info-card ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      color: #0f172a;
+      font-weight: 850;
+      font-size: 0.9rem;
+      white-space: nowrap;
+    }
+    .pill .muted {
+      color: #64748b;
+      font-weight: 900;
+      border-left: 1px solid #e5e7eb;
+      padding-left: 8px;
+    }
+    .contact-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px dashed #e5e7eb;
+      font-size: 0.93rem;
+    }
+    .contact-line:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .contact-label {
+      color: #64748b;
+      font-weight: 700;
+    }
+    .contact-value {
+      color: #0f172a;
+      font-weight: 800;
+      text-align: right;
+      overflow-wrap: anywhere;
+    }
+    .contact-value a {
+      color: inherit;
+      text-decoration: none;
+    }
+    .contact-value a:hover {
+      color: var(--primary-color);
+    }
+
+    .form-side {
+      background: #fff;
+      padding: 32px 30px;
+      border-radius: 14px;
+      box-shadow: 0 16px 38px rgba(0, 0, 0, 0.06);
+      border: 1px solid #e5e7eb;
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+    .form-side.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .form-title {
+      margin: 0 0 6px;
+      font-size: 1.2rem;
+      color: #0f172a;
+      font-weight: 900;
+    }
+    .form-subtitle {
+      margin: 0 0 18px;
+      color: #64748b;
+      font-size: 0.93rem;
+      line-height: 1.7;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      margin-bottom: 7px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: #374151;
+      letter-spacing: 0.01em;
+    }
+    input,
+    textarea {
+      width: 100%;
+      padding: 12px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 9px;
+      font-size: 0.98rem;
+      box-sizing: border-box;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      background: #fff;
+    }
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: color-mix(in srgb, var(--primary-color) 60%, #d1d5db);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 14%, transparent);
+    }
+    textarea {
+      height: 130px;
+      resize: vertical;
+    }
+    .inline-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .submit-btn {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 14px;
+      width: 100%;
+      border-radius: 10px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: filter 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+      letter-spacing: 0.02em;
+      box-shadow: 0 16px 28px color-mix(in srgb, var(--primary-color) 28%, transparent);
+    }
+    .submit-btn:hover {
+      filter: brightness(0.92);
+      transform: translateY(-1px);
+    }
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .form-note {
+      margin-top: 10px;
+      color: #94a3b8;
+      font-size: 0.84rem;
+      line-height: 1.65;
+    }
+
+    #form-status {
+      display: none;
+      margin-top: 14px;
+      padding: 13px 14px;
+      border-radius: 9px;
+      font-weight: 700;
+      line-height: 1.6;
+      font-size: 0.9rem;
+    }
+    #form-status.error {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+    #form-status.success {
+      background: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    @media (max-width: 900px) {
+      .page-shell {
+        margin: 48px auto 64px;
+      }
+      .quote-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      .inline-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+  <section class="page-shell">
+    <header class="hero-intro animate-in">
+      <div class="eyebrow">Contact & Inquiry</div>
+      <h1>Contact Us</h1>
+      <p>
+        Share your target product and requirements—our team typically replies within 24 hours.
+      </p>
+    </header>
+
+    <div class="quote-container">
+      <aside class="info-side">
+        <article class="info-card animate-in">
+          <h3>Direct Contact</h3>
+          <div class="contact-line">
+            <span class="contact-label">Company</span>
+            <span class="contact-value">{companyName}</span>
+          </div>
+          <div class="contact-line">
+            <span class="contact-label">Email</span>
+            <span class="contact-value">
+              <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
+            </span>
+          </div>
+          <div class="contact-line">
+            <span class="contact-label">Phone</span>
+            <span class="contact-value">
+              <a href={`tel:${contactPhone.replace(/\s/g, '')}`}>{contactPhone}</a>
+            </span>
+          </div>
+        </article>
+
+        <article class="info-card animate-in">
+          <h3>Quick Quote Checklist</h3>
+          <div class="pill-row" aria-label="Checklist">
+            <span class="pill">Application</span>
+            <span class="pill">Quantity</span>
+            <span class="pill">Specs</span>
+            <span class="pill">Destination</span>
+          </div>
+        </article>
+
+        <article class="info-card animate-in">
+          <h3>Service</h3>
+          <div class="pill-row" aria-label="Service promise">
+            <span class="pill">
+              Reply time <span class="muted">≤ 24h</span>
+            </span>
+            <span class="pill">
+              OEM/ODM <span class="muted">Supported</span>
+            </span>
+          </div>
+        </article>
+      </aside>
+
+      <div class="form-side animate-in">
+        <h2 class="form-title">Send an Inquiry</h2>
+        <p class="form-subtitle">
+          Leave your details and requirements. We’ll follow up with options and next steps.
+        </p>
+        <form id="quote-form">
+          <div class="inline-grid">
+            <div class="form-group">
+              <label for="name">Your Name *</label>
+              <input type="text" id="name" name="name" required placeholder="Full Name" />
+            </div>
+            <div class="form-group">
+              <label for="email">Business Email *</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                required
+                placeholder="email@company.com"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="subject">Inquiry Subject</label>
+            <input
+              type="text"
+              id="subject"
+              name="subject"
+              value={product ? `Inquiry about: ${product}` : ''}
+              placeholder="e.g., Bulk Order for 290W Work Lights"
+            />
+          </div>
+          <div class="form-group">
+            <label for="message">Your Requirements</label>
+            <textarea
+              id="message"
+              name="message"
+              placeholder="Please describe your needs, quantities, destination market, or specific vehicle requirements..."
+            ></textarea>
+          </div>
+          <button type="submit" class="submit-btn">SEND INQUIRY</button>
+          <p class="form-note">
+            We only use your info to respond to this inquiry.
+          </p>
+        </form>
+        <div id="form-status" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+</MainLayout>
+
+<script is:inline>
+  ;(function () {
+    var form = document.getElementById('quote-form')
+    var statusDiv = document.getElementById('form-status')
+    var submitBtn = form && form.querySelector('.submit-btn')
+    if (!form || !statusDiv || !submitBtn) return
+
+    function showSuccess(msg) {
+      statusDiv.textContent = msg
+      statusDiv.style.display = 'block'
+      statusDiv.className = 'success'
+    }
+
+    function showError(msg) {
+      statusDiv.textContent = msg
+      statusDiv.style.display = 'block'
+      statusDiv.className = 'error'
+    }
+
+    var animated = document.querySelectorAll('.animate-in')
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible')
+              io.unobserve(entry.target)
+            }
+          })
+        },
+        {threshold: 0.15},
+      )
+      animated.forEach(function (node) {
+        io.observe(node)
+      })
+    } else {
+      animated.forEach(function (node) {
+        node.classList.add('visible')
+      })
+    }
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault()
+      var originalLabel = submitBtn.textContent
+      submitBtn.textContent = 'SENDING...'
+      submitBtn.disabled = true
+      statusDiv.style.display = 'none'
+
+      var formData = new FormData(form)
+      var data = Object.fromEntries(formData.entries())
+
+      try {
+        var response = await fetch('/api/submit-inquiry', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(data),
+        })
+        var payload = await response.json().catch(function () {
+          return {}
+        })
+        if (response.ok && payload.success) {
+          showSuccess('Thank you! Your inquiry has been sent successfully. We will contact you soon.')
+          form.reset()
+        } else {
+          showError(payload.message || 'Something went wrong. Please try again later.')
+        }
+      } catch (err) {
+        showError('Oops! Something went wrong. Please try again later.')
+      } finally {
+        submitBtn.textContent = originalLabel || 'SEND INQUIRY'
+        submitBtn.disabled = false
+      }
+    })
+  })()
+</script>

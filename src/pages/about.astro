@@ -1,0 +1,375 @@
+---
+import MainLayout from '../layouts/MainLayout.astro'
+import {sanityClient} from 'sanity:client'
+
+const settings = await sanityClient.fetch<{
+  companyName: string | null
+  companyDescription: string | null
+  companyImageUrls: string[] | null
+} | null>(`*[_type == "siteSettings"][0]{
+  companyName,
+  companyDescription,
+  "companyImageUrls": companyImages[].asset->url
+}`)
+
+const companyName = settings?.companyName?.trim() || 'Car Light'
+const description = settings?.companyDescription?.trim() || ''
+const pageTitle = `About Us | ${companyName}`
+const introText =
+  description ||
+  `${companyName} develops automotive lighting products for OEM, wholesalers, and distributors. We focus on practical engineering, stable quality, and clear communication from sampling to mass production.`
+const topImages = [
+  'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1400&q=80',
+  'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=1400&q=80',
+  'https://images.unsplash.com/photo-1486006920555-c77dcf18193c?auto=format&fit=crop&w=1400&q=80',
+]
+
+const timeline = [
+  {
+    year: '2010',
+    text: 'Started with vibration-resistant LED work lights for industrial and utility applications.',
+  },
+  {
+    year: '2013',
+    text: 'Expanded product range to include driving lights and warning lights for commercial vehicles.',
+  },
+  {
+    year: '2016',
+    text: 'Established structured OEM/ODM workflow for branding, packaging, and model customization.',
+  },
+  {
+    year: '2019',
+    text: 'Scaled production with tighter QC checkpoints and improved thermal/optical validation.',
+  },
+  {
+    year: '2022',
+    text: 'Increased support for Europe and North America projects across multiple vehicle platforms.',
+  },
+  {
+    year: '2024',
+    text: 'Serving partners in 60+ countries with a broad portfolio of automotive lighting products.',
+  },
+]
+---
+
+<MainLayout title={pageTitle}>
+  <style>
+    .about-wrap {
+      padding-bottom: 70px;
+    }
+    .top-gallery {
+      max-width: 980px;
+      margin: 22px auto 0;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 1.25fr 1fr 1fr;
+      gap: 10px;
+    }
+    .top-gallery figure {
+      margin: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.07);
+      min-height: 150px;
+      opacity: 0;
+      transform: translateY(14px);
+      transition:
+        opacity 0.55s ease,
+        transform 0.55s ease;
+    }
+    .top-gallery figure.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .top-gallery img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transform: scale(1.01);
+      transition: transform 0.35s ease;
+    }
+    .top-gallery figure:hover img {
+      transform: scale(1.05);
+    }
+    .stats-bar {
+      background: #ef3b2d;
+      color: #fff;
+      margin-top: 18px;
+    }
+    .stats-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 18px 20px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 20px;
+      text-align: center;
+    }
+    .stat-item {
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+    .stat-item.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .stat-num {
+      font-size: 2rem;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label {
+      font-size: 0.8rem;
+      opacity: 0.92;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 44px 20px 0;
+    }
+    .section-title {
+      margin: 0 0 18px;
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 900;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+      position: relative;
+      padding-bottom: 10px;
+    }
+    .section-title::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0;
+      width: 52px;
+      height: 3px;
+      border-radius: 999px;
+      background: #ef3b2d;
+    }
+    .story p {
+      margin: 0 0 16px;
+      color: #374151;
+      line-height: 1.85;
+      font-size: 1rem;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .story p.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .journey {
+      margin-top: 44px;
+    }
+    .timeline {
+      position: relative;
+      margin: 6px 0 0;
+      padding-left: 28px;
+      list-style: none;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 9px;
+      top: 2px;
+      bottom: 2px;
+      width: 2px;
+      background: #e5e7eb;
+    }
+    .timeline li {
+      position: relative;
+      padding: 0 0 24px 0;
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .timeline li.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .timeline li::before {
+      content: '';
+      position: absolute;
+      left: -22px;
+      top: 4px;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #ef3b2d;
+      box-shadow: 0 0 0 4px #fff;
+      transition: transform 0.25s ease;
+    }
+    .timeline li:hover::before {
+      transform: scale(1.18);
+    }
+    .year {
+      font-size: 0.82rem;
+      color: #ef3b2d;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .item-text {
+      color: #334155;
+      line-height: 1.75;
+      font-size: 0.96rem;
+    }
+    @media (max-width: 768px) {
+      .top-gallery {
+        grid-template-columns: 1fr;
+      }
+      .top-gallery figure {
+        min-height: 130px;
+      }
+      .stats-inner {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .section-title {
+        font-size: 1.7rem;
+      }
+    }
+
+  </style>
+
+  <div class="about-wrap">
+    <section class="top-gallery" aria-label="Company images">
+      {topImages.map((url, i) => (
+        <figure class="animate-in" style={`transition-delay: ${i * 120}ms;`}>
+          <img src={url} alt={`${companyName} showcase image ${i + 1}`} loading="lazy" />
+        </figure>
+      ))}
+    </section>
+
+    <section class="stats-bar" aria-label="Company stats">
+      <div class="stats-inner">
+        <div class="stat-item animate-in" style="transition-delay: 0ms;">
+          <div class="stat-num count-up" data-target="15">15+</div>
+          <div class="stat-label">Years in Business</div>
+        </div>
+        <div class="stat-item animate-in" style="transition-delay: 80ms;">
+          <div class="stat-num count-up" data-target="60">60+</div>
+          <div class="stat-label">Countries Served</div>
+        </div>
+        <div class="stat-item animate-in" style="transition-delay: 140ms;">
+          <div class="stat-num count-up" data-target="200">200+</div>
+          <div class="stat-label">Product Models</div>
+        </div>
+        <div class="stat-item animate-in" style="transition-delay: 200ms;">
+          <div class="stat-num count-up" data-target="500">500+</div>
+          <div class="stat-label">OEM Clients</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="container">
+      <section class="story" aria-label="Our story">
+        <h2 class="section-title">Our Story</h2>
+        <p class="animate-in" style="transition-delay: 30ms;">
+          {companyName} focuses on automotive lighting products, including LED headlights, work lights,
+          driving lights, and warning lights for global aftermarket and OEM projects.
+        </p>
+        <p class="animate-in" style="transition-delay: 100ms;">
+          Our core team has long-term experience in optics, thermal design, and manufacturing execution.
+          We support customized programmes for vehicle platforms such as Audi, BMW, Mercedes-Benz, and
+          more based on customer requirements.
+        </p>
+        <p class="animate-in" style="transition-delay: 170ms;">
+          From sample validation to batch delivery, we prioritize consistency, practical engineering, and
+          clear communication so partners can launch reliable products with lower risk.
+        </p>
+        {introText ? (
+          <p class="animate-in" style="transition-delay: 240ms;">
+            {introText}
+          </p>
+        ) : null}
+      </section>
+
+      <section class="journey" aria-label="Our journey">
+        <h2 class="section-title">Our Journey</h2>
+        <ul class="timeline">
+          {timeline.map((item) => (
+            <li class="animate-in">
+              <div class="year">{item.year}</div>
+              <div class="item-text">{item.text}</div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  </div>
+
+  <script is:inline>
+    ;(function () {
+      var animated = document.querySelectorAll('.animate-in')
+      function reveal(node) {
+        node.classList.add('visible')
+      }
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                reveal(entry.target)
+                io.unobserve(entry.target)
+              }
+            })
+          },
+          {threshold: 0.15},
+        )
+        animated.forEach(function (n) {
+          io.observe(n)
+        })
+      } else {
+        animated.forEach(reveal)
+      }
+
+      // count-up animation for top stats
+      function animateCount(el) {
+        var target = Number(el.getAttribute('data-target') || '0')
+        if (!target) return
+        var start = 0
+        var duration = 900
+        var t0 = performance.now()
+        function step(t) {
+          var p = Math.min((t - t0) / duration, 1)
+          var eased = 1 - Math.pow(1 - p, 3)
+          var value = Math.round(start + (target - start) * eased)
+          el.textContent = value + '+'
+          if (p < 1) requestAnimationFrame(step)
+        }
+        requestAnimationFrame(step)
+      }
+      document.querySelectorAll('.count-up').forEach(function (el) {
+        var started = false
+        if ('IntersectionObserver' in window) {
+          var io2 = new IntersectionObserver(
+            function (entries) {
+              entries.forEach(function (entry) {
+                if (entry.isIntersecting && !started) {
+                  started = true
+                  animateCount(el)
+                  io2.unobserve(el)
+                }
+              })
+            },
+            {threshold: 0.5},
+          )
+          io2.observe(el)
+        } else {
+          animateCount(el)
+        }
+      })
+    })()
+  </script>
+</MainLayout>
