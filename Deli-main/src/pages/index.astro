@@ -1,0 +1,457 @@
+---
+import {sanityClient} from 'sanity:client'
+import MainLayout from '../layouts/MainLayout.astro'
+import {assignCategoryPathSlugs} from '../lib/slugify'
+import type {ProductCard} from '../components/ProductListing.astro'
+import ProductListing from '../components/ProductListing.astro'
+
+type CategoryRow = {
+  title: string | null
+  slug: string | null
+  imageUrl: string | null
+  description: string | null
+  count: number | null
+}
+
+type SettingsRow = {
+  companyName: string | null
+  companyDescription: string | null
+}
+
+const settings = await sanityClient.fetch<SettingsRow | null>(`*[_type=="siteSettings"][0]{
+  companyName,
+  companyDescription
+}`)
+
+const heroTitle = settings?.companyName?.trim() || 'Car Light'
+const heroSubtitle =
+  settings?.companyDescription?.trim() ||
+  'Automotive lighting supplier focused on premium LED headlights, work lights, and OEM/ODM programs for global B2B partners.'
+
+const categoriesRaw = await sanityClient.fetch<CategoryRow[]>(
+  `*[_type == "productCategory"] | order(title asc) {
+    title,
+    "slug": slug.current,
+    "imageUrl": image.asset->url,
+    description,
+    "count": count(*[_type=="product" && defined(slug.current) && references(^._id)])
+  }`,
+)
+
+const categories = assignCategoryPathSlugs(categoriesRaw ?? [])
+
+const heroVisual =
+  categories.find((c) => c.imageUrl)?.imageUrl ||
+  'https://images.unsplash.com/photo-1494905998402-395d579af36f?auto=format&fit=crop&w=1600&q=80'
+
+type ProductRow = {
+  title: string | null
+  slug: string | null
+  imageUrl: string | null
+  imageAlt: string | null
+  categoryName: string | null
+  price: number | null
+  updatedAt: string | null
+}
+
+const featuredProductsRaw = await sanityClient.fetch<ProductRow[]>(
+  `*[_type=="product" && defined(slug.current)] | order(_updatedAt desc)[0...6]{
+    title,
+    "slug": slug.current,
+    "imageUrl": mainImage.asset->url,
+    "imageAlt": mainImage.alt,
+    "categoryName": category->title,
+    price,
+    "updatedAt": _updatedAt
+  }`,
+)
+
+const featuredProducts: ProductCard[] = (featuredProductsRaw ?? [])
+  .filter((p): p is ProductRow & {slug: string} => typeof p.slug === 'string' && p.slug.length > 0)
+  .map((p) => ({
+    title: p.title,
+    slug: p.slug,
+    imageUrl: p.imageUrl,
+    imageAlt: p.imageAlt,
+    categoryName: p.categoryName,
+    price: p.price ?? null,
+    updatedAt: p.updatedAt ?? null,
+  }))
+---
+
+<MainLayout title={`${heroTitle} | Premium Automotive Lighting`}>
+  <style>
+    .hero {
+      max-width: 1200px;
+      margin: 26px auto 0;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      perspective: 1000px;
+    }
+    .hero-left {
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      background: #fff;
+      padding: 44px 38px;
+      box-shadow: 0 16px 36px rgba(15, 23, 42, 0.06);
+      opacity: 0;
+      transform: translateY(14px);
+      transition:
+        opacity 0.55s ease,
+        transform 0.55s ease,
+        box-shadow 0.28s ease;
+    }
+    .hero-left.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .hero-left:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 22px 42px rgba(15, 23, 42, 0.08);
+    }
+    .eyebrow {
+      display: inline-flex;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      font-size: 0.76rem;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: #475569;
+      background: #fff;
+      margin-bottom: 12px;
+    }
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      line-height: 1.04;
+      letter-spacing: -0.03em;
+      color: #0f172a;
+      font-weight: 950;
+      max-width: 11ch;
+      transition: letter-spacing 0.25s ease;
+    }
+    .hero-left:hover h1 {
+      letter-spacing: -0.028em;
+    }
+    .hero p {
+      margin: 0;
+      color: #475569;
+      font-size: 1rem;
+      line-height: 1.78;
+      max-width: 55ch;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      transition: transform 0.25s ease;
+    }
+    .hero-left:hover .hero-actions {
+      transform: translateX(2px);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 16px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 840;
+      font-size: 0.92rem;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .btn.primary {
+      background: var(--primary-color);
+      color: #fff;
+      box-shadow: 0 12px 24px color-mix(in srgb, var(--primary-color) 24%, transparent);
+    }
+    .btn.primary:hover {
+      transform: translateY(-1px);
+      filter: brightness(0.96);
+    }
+    .btn.ghost {
+      background: #fff;
+      border-color: #e5e7eb;
+      color: #0f172a;
+    }
+
+    .hero-right {
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      overflow: hidden;
+      min-height: 360px;
+      position: relative;
+      box-shadow: 0 16px 36px rgba(15, 23, 42, 0.06);
+      opacity: 0;
+      transform: translateY(14px);
+      transition:
+        opacity 0.65s ease,
+        transform 0.65s ease,
+        box-shadow 0.28s ease;
+    }
+    .hero-right.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .hero-right:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 24px 48px rgba(15, 23, 42, 0.1);
+    }
+    .hero-right img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transform: scale(1.01);
+      transition: transform 0.5s ease;
+    }
+    .hero-right:hover img {
+      transform: scale(1.045);
+    }
+
+    .section-head {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 18px;
+    }
+    .section-head h2 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 950;
+      letter-spacing: -0.02em;
+      color: #0f172a;
+    }
+    .section-head p {
+      margin: 8px 0 0;
+      color: #64748b;
+      line-height: 1.7;
+      max-width: 66ch;
+    }
+    .section-head a {
+      color: var(--primary-color);
+      font-weight: 900;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .category-grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+    }
+    .cat-card {
+      display: grid;
+      grid-template-columns: 86px 1fr;
+      gap: 12px;
+      align-items: center;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      background: #fff;
+      padding: 9px;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s ease;
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    .cat-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .cat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px rgba(15, 23, 42, 0.07);
+      border-color: color-mix(in srgb, var(--primary-color) 45%, #e5e7eb);
+    }
+    .cat-thumb {
+      height: 64px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cat-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .cat-name {
+      margin: 0 0 4px;
+      color: #0f172a;
+      font-size: 0.96rem;
+      font-weight: 850;
+      line-height: 1.3;
+    }
+    .cat-meta {
+      color: #64748b;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .cta-band {
+      max-width: 1200px;
+      margin: 34px auto 72px;
+      padding: 24px 22px;
+      border-radius: 14px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: center;
+    }
+    .cta-band h3 {
+      margin: 0 0 4px;
+      font-size: 1.2rem;
+      color: #0f172a;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+    .cta-band p {
+      margin: 0;
+      color: #64748b;
+      line-height: 1.7;
+    }
+
+    .empty-categories {
+      text-align: center;
+      padding: 2.6rem 20px;
+      color: #6b7280;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 980px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+      .hero-right {
+        min-height: 250px;
+      }
+      .section-head {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .cta-band {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+  <section class="hero">
+    <div class="hero-left animate-in">
+      <div class="eyebrow">Premium Automotive Lighting</div>
+      <h1>{heroTitle}</h1>
+      <p>{heroSubtitle}</p>
+      <div class="hero-actions">
+        <a class="btn primary" href="/products">Browse Products</a>
+        <a class="btn ghost" href="/request-quote">Request a Quote</a>
+      </div>
+    </div>
+
+    <div class="hero-right animate-in" style="transition-delay: 110ms;">
+      <img src={heroVisual} alt={`${heroTitle} product showcase`} loading="eager" />
+    </div>
+  </section>
+
+  <header class="section-head">
+    <div>
+      <h2>Browse by Category</h2>
+      <p>Choose a category to view products, technical details, and inquiry-ready pages.</p>
+    </div>
+    <a href="/products">View all products →</a>
+  </header>
+
+  {
+    categories.length ? (
+      <div class="category-grid">
+        {categories.map((cat) => (
+          <a href={`/category/${cat.pathSlug}`} class="cat-card animate-in">
+            <div class="cat-thumb">
+              {cat.imageUrl ? (
+                <img src={cat.imageUrl} alt={cat.title ?? 'Category'} loading="lazy" />
+              ) : (
+                <span style="color:#94a3b8;font-size:0.8rem;">No image</span>
+              )}
+            </div>
+            <div>
+              <h3 class="cat-name">{cat.title}</h3>
+              <div class="cat-meta">{cat.count ?? 0} products</div>
+            </div>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <p class="empty-categories">
+        No categories yet. Create and publish <strong>productCategory</strong> documents in Sanity Studio.
+      </p>
+    )
+  }
+
+  {featuredProducts.length ? (
+    <ProductListing
+      products={featuredProducts}
+      sectionTitle="Featured Products"
+      sectionDescription="Latest updated products with inquiry-ready specs and media."
+    />
+  ) : null}
+
+  <section class="cta-band" aria-label="Inquiry call to action">
+    <div>
+      <h3>Need a customized lighting solution?</h3>
+      <p>
+        Tell us your vehicle platform, quantity, and requirements. We’ll respond with practical options
+        and quotation support.
+      </p>
+    </div>
+    <div>
+      <a class="btn primary" href="/request-quote">Send Inquiry</a>
+    </div>
+  </section>
+
+  <script is:inline>
+    ;(function () {
+      var nodes = document.querySelectorAll('.animate-in')
+      if (!nodes.length) return
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('visible')
+                io.unobserve(entry.target)
+              }
+            })
+          },
+          {threshold: 0.14},
+        )
+        nodes.forEach(function (node, idx) {
+          if (!node.getAttribute('style') || !node.getAttribute('style').includes('transition-delay')) {
+            node.style.transitionDelay = Math.min(idx * 60, 360) + 'ms'
+          }
+          io.observe(node)
+        })
+      } else {
+        nodes.forEach(function (node) {
+          node.classList.add('visible')
+        })
+      }
+    })()
+  </script>
+</MainLayout>

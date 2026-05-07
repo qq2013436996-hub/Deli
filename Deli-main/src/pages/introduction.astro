@@ -1,0 +1,507 @@
+---
+import MainLayout from '../layouts/MainLayout.astro'
+
+const milestones = [
+  {
+    year: '2005',
+    text: 'Deli launched paper shredder in China and entered the professional office industry.',
+    image: '/introduction/printer-wholesale.webp',
+  },
+  {
+    year: '2013',
+    text: "Deli printer R&D team was established with 100+ engineers and started first-generation laser printer development.",
+    image: '/introduction/printer-custom.webp',
+  },
+  {
+    year: '2019',
+    text: 'Deli office machine launched overseas and announced global strategy in Indonesia.',
+    image: '/introduction/printer-sale.webp',
+  },
+  {
+    year: '2022',
+    text: 'Deli printer entered Thailand market and accelerated expansion in key countries.',
+    image: '/introduction/printer-suppliers.webp',
+  },
+]
+---
+
+<MainLayout title="Introduction | Deli Group">
+  <style>
+    .page {
+      background: #fff;
+      color: #111827;
+    }
+    .hero {
+      position: relative;
+      height: clamp(340px, 60vw, 620px);
+      overflow: hidden;
+    }
+    .hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transform: scale(1.02);
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(2, 6, 23, 0.18) 0%, rgba(2, 6, 23, 0.7) 100%);
+    }
+    .hero-text {
+      position: absolute;
+      left: max(20px, calc((100vw - 1120px) / 2 + 10px));
+      bottom: 12%;
+      z-index: 2;
+      color: #fff;
+    }
+    .hero-text h1 {
+      margin: 0 0 6px;
+      font-size: clamp(1.6rem, 3.3vw, 2.6rem);
+      letter-spacing: -0.02em;
+    }
+    .hero-text p {
+      margin: 0;
+      color: #e2e8f0;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    .crumb {
+      color: #64748b;
+      font-size: 0.83rem;
+      margin: 14px 0 30px;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: center;
+      margin: 0 0 34px;
+    }
+    .split.reverse .copy {
+      order: 2;
+    }
+    .split.reverse .media {
+      order: 1;
+    }
+    .copy .kicker {
+      color: #e11d48;
+      font-size: 0.76rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+    .copy h2 {
+      margin: 0 0 10px;
+      font-size: clamp(1.5rem, 2.8vw, 2.1rem);
+      letter-spacing: -0.02em;
+      color: #0f172a;
+    }
+    .copy p {
+      margin: 0;
+      color: #475569;
+      line-height: 1.82;
+      max-width: 56ch;
+    }
+    .media {
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+    }
+    .media img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      aspect-ratio: 16 / 9;
+    }
+
+    .facts {
+      background: #f3f4f6;
+      margin: 46px 0 0;
+      padding: 42px 0;
+      text-align: center;
+    }
+    .facts h2 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+      color: #1f2937;
+    }
+    .facts p {
+      margin: 0 0 24px;
+      color: #6b7280;
+      font-size: 0.92rem;
+    }
+    .fact-grid {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+    .fact-num {
+      color: #22d3ee;
+      font-size: 2rem;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .fact-label {
+      color: #6b7280;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      font-weight: 700;
+    }
+
+    .milestone {
+      padding: 54px 0;
+      background: #fff;
+    }
+    .section-head {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+    .section-head h2 {
+      margin: 0 0 6px;
+      font-size: 2rem;
+      color: #1f2937;
+    }
+    .section-head p {
+      margin: 0;
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+    .mile-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .mile-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+      transition: transform 0.25s ease;
+    }
+    .mile-card:hover {
+      transform: translateY(-3px);
+    }
+    .mile-card img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      display: block;
+    }
+    .mile-body {
+      padding: 12px 12px 14px;
+    }
+    .mile-year {
+      font-size: 1.7rem;
+      font-weight: 900;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+    .mile-text {
+      color: #6b7280;
+      font-size: 0.9rem;
+      line-height: 1.65;
+    }
+
+    .presence {
+      background:
+        radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.2), transparent 28%),
+        radial-gradient(circle at 80% 70%, rgba(99, 102, 241, 0.18), transparent 28%),
+        linear-gradient(180deg, #0b1220 0%, #0a1020 100%);
+      padding: 56px 0;
+      text-align: center;
+      color: #fff;
+    }
+    .presence h2 {
+      margin: 0 0 10px;
+      font-size: 2rem;
+    }
+    .presence-map {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    .presence-map img {
+      width: 100%;
+      border-radius: 14px;
+      opacity: 0.96;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+    }
+
+    .news {
+      padding: 52px 0 70px;
+      background: #fff;
+    }
+    .reveal {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 980px) {
+      .split,
+      .split.reverse .copy,
+      .split.reverse .media {
+        grid-template-columns: 1fr;
+        order: unset;
+      }
+      .fact-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .mile-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    @media (max-width: 640px) {
+      .mile-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+  <main class="page">
+    <section class="hero">
+      <img src="/introduction/printing-machine-manufacturer.webp" alt="About Deli headquarters" loading="eager" />
+      <div class="hero-text">
+        <h1>About Deli</h1>
+        <p>Inspiring Innovation,<br />Empowering Work and Learning.</p>
+      </div>
+    </section>
+
+    <div class="container">
+      <div class="crumb">Home &gt; About Us &gt; Company Profile</div>
+
+      <section class="split reveal">
+        <div class="copy">
+          <div class="kicker">Company Profile</div>
+          <h2>Exceeding the Expectation</h2>
+          <p>
+            Deli has deeply cultivated in office industry for more than 20 years, now becoming the
+            advocator and leader of overall solutions for multiple working scenes. Deli is one of
+            the few companies mastering both Laser & Inkjet printer technology, developing,
+            researching and manufacturing printer in China.
+          </p>
+        </div>
+        <figure class="media">
+          <img src="/introduction/printer-factory.webp" alt="Deli company profile" loading="lazy" />
+        </figure>
+      </section>
+
+      <section class="split reverse reveal">
+        <div class="copy">
+          <div class="kicker">Manufacturing</div>
+          <h2>Intelligent and Highly Automated</h2>
+          <p>
+            Deli is the largest office machine manufacturer in Asia, totals 750000m². 50+
+            categories&apos; production lines are highly automated. In 2019, Deli&apos;s first
+            overseas factory based in Vietnam started to produce.
+          </p>
+        </div>
+        <figure class="media">
+          <img src="/introduction/printer-manufacturers.webp" alt="Deli manufacturing" loading="lazy" />
+        </figure>
+      </section>
+
+      <section class="split reveal">
+        <div class="copy">
+          <div class="kicker">Innovation</div>
+          <h2>Innovating Your Life</h2>
+          <p>
+            Deli continues to invest in innovation, committed to improving how we live and work
+            through research and development. Quality and innovation are the two priority factors
+            kept in every Deli team member&apos;s mind.
+          </p>
+        </div>
+        <figure class="media">
+          <img src="/introduction/chinese-printers.webp" alt="Deli innovation center" loading="lazy" />
+        </figure>
+      </section>
+    </div>
+
+    <section class="facts reveal">
+      <h2>Quick Facts</h2>
+      <p>Deli specializes in paper shredders, laminators, power strips, safe boxes, printers and barcode scanners.</p>
+      <div class="fact-grid">
+        <div>
+          <div class="fact-num count-up" data-target="8" data-suffix="">8</div>
+          <div class="fact-label">Industries</div>
+        </div>
+        <div>
+          <div class="fact-num count-up" data-target="12" data-suffix="">12</div>
+          <div class="fact-label">Smart Factories</div>
+        </div>
+        <div>
+          <div class="fact-num count-up" data-target="18000" data-suffix="+">18000+</div>
+          <div class="fact-label">Employees</div>
+        </div>
+        <div>
+          <div class="fact-num count-up" data-target="750000" data-suffix="+ m²">750000+ m²</div>
+          <div class="fact-label">Manufacturing Plant</div>
+        </div>
+        <div>
+          <div class="fact-num">Top1</div>
+          <div class="fact-label">Office & School Brand in China</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="milestone">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2>Milestone</h2>
+          <p>The Development History of Deli Office Machine and Printer</p>
+        </div>
+        <div class="mile-grid">
+          {milestones.map((item, idx) => (
+            <article class="mile-card reveal" style={`transition-delay:${idx * 70}ms;`}>
+              <img src={item.image} alt={`Milestone ${item.year}`} loading="lazy" />
+              <div class="mile-body">
+                <div class="mile-year">{item.year}</div>
+                <div class="mile-text">{item.text}</div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="presence reveal">
+      <h2>Global Presence</h2>
+      <div class="presence-map">
+        <img src="/introduction/global-presence.png" alt="Deli global presence map" loading="lazy" />
+      </div>
+    </section>
+
+    <section class="news">
+      <div class="container">
+        <section class="split reveal">
+          <div class="copy">
+            <div class="kicker">News & Events</div>
+            <h2>Welcome to Deli World</h2>
+            <p>
+              Inspiring Innovation, Deli news and events will give you firsthand Deli information,
+              including new product & technology launching, event holding and announcements.
+            </p>
+          </div>
+          <figure class="media">
+            <img src="/introduction/printing-machine-companies.webp" alt="Deli news and events" loading="lazy" />
+          </figure>
+        </section>
+
+        <section class="split reverse reveal">
+          <div class="copy">
+            <div class="kicker">Social Responsibility</div>
+            <h2>Deli Fulfillment Action</h2>
+            <p>
+              Deli Group has incorporated responsibility into corporate values and continues to
+              support talent development, educational assistance, care for the elderly, rural
+              revitalization, and emergency social infrastructure.
+            </p>
+          </div>
+          <figure class="media">
+            <img src="/introduction/printer-custom.webp" alt="Deli social responsibility" loading="lazy" />
+          </figure>
+        </section>
+
+        <section class="split reveal">
+          <div class="copy">
+            <div class="kicker">ESG</div>
+            <h2>Long-term Responsible Governance</h2>
+            <p>
+              Our ESG initiatives reflect Deli&apos;s long-term commitment to responsible governance,
+              environmental impact management and social responsibility with measurable actions.
+            </p>
+          </div>
+          <figure class="media">
+            <img src="/introduction/deli-esg-report.webp" alt="Deli ESG report" loading="lazy" />
+          </figure>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script is:inline>
+    ;(function () {
+      var items = document.querySelectorAll('.reveal')
+      function show(node) {
+        node.classList.add('visible')
+      }
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                show(entry.target)
+                io.unobserve(entry.target)
+              }
+            })
+          },
+          {threshold: 0.14},
+        )
+        items.forEach(function (item) {
+          io.observe(item)
+        })
+      } else {
+        items.forEach(show)
+      }
+
+      function count(el) {
+        var target = Number(el.getAttribute('data-target') || '0')
+        var suffix = el.getAttribute('data-suffix') || '+'
+        if (!target) return
+        var duration = 900
+        var start = 0
+        var t0 = performance.now()
+        function step(t) {
+          var p = Math.min((t - t0) / duration, 1)
+          var eased = 1 - Math.pow(1 - p, 3)
+          var value = Math.round(start + (target - start) * eased)
+          el.textContent = value + suffix
+          if (p < 1) requestAnimationFrame(step)
+        }
+        requestAnimationFrame(step)
+      }
+
+      document.querySelectorAll('.count-up').forEach(function (el) {
+        var started = false
+        if ('IntersectionObserver' in window) {
+          var io2 = new IntersectionObserver(
+            function (entries) {
+              entries.forEach(function (entry) {
+                if (entry.isIntersecting && !started) {
+                  started = true
+                  count(el)
+                  io2.unobserve(el)
+                }
+              })
+            },
+            {threshold: 0.6},
+          )
+          io2.observe(el)
+        } else {
+          count(el)
+        }
+      })
+    })()
+  </script>
+</MainLayout>

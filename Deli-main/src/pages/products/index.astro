@@ -1,0 +1,191 @@
+---
+import {sanityClient} from 'sanity:client'
+import MainLayout from '../../layouts/MainLayout.astro'
+import ProductListing from '../../components/ProductListing.astro'
+import type {ProductCard} from '../../components/ProductListing.astro'
+
+type ProductRow = {
+  title: string | null
+  slug: string | null
+  imageUrl: string | null
+  imageAlt: string | null
+  categoryName: string | null
+  price: number | null
+  updatedAt: string | null
+}
+
+type CategoryRow = {
+  title: string | null
+  slug: string | null
+  count: number | null
+}
+
+const categories = await sanityClient.fetch<CategoryRow[]>(
+  `*[_type == "productCategory"] | order(title asc) {
+    title,
+    "slug": slug.current,
+    "count": count(*[_type=="product" && defined(slug.current) && references(^._id)])
+  }`,
+)
+
+const productsRaw = await sanityClient.fetch<ProductRow[]>(
+  `*[_type == "product" && defined(slug.current)] | order(_updatedAt desc) {
+    title,
+    "slug": slug.current,
+    "imageUrl": mainImage.asset->url,
+    "imageAlt": mainImage.alt,
+    "categoryName": category->title,
+    price,
+    "updatedAt": _updatedAt
+  }`,
+)
+
+const products: ProductCard[] = (productsRaw ?? [])
+  .filter((p): p is ProductRow & {slug: string} => typeof p.slug === 'string' && p.slug.length > 0)
+  .map((p) => ({
+    title: p.title,
+    slug: p.slug,
+    imageUrl: p.imageUrl,
+    imageAlt: p.imageAlt,
+    categoryName: p.categoryName,
+    price: p.price ?? null,
+    updatedAt: p.updatedAt ?? null,
+  }))
+---
+
+<MainLayout title="Our Products | Car Light">
+  <style>
+    .page-hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 56px 20px 24px;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 28px;
+      align-items: end;
+    }
+    .page-hero h1 {
+      margin: 0 0 10px;
+      font-size: clamp(1.85rem, 3.6vw, 2.7rem);
+      letter-spacing: -0.02em;
+      font-weight: 900;
+      color: #111827;
+      line-height: 1.12;
+    }
+    .page-hero p {
+      margin: 0;
+      color: #6b7280;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      max-width: 62ch;
+    }
+    .hero-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .stat {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px 18px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+    }
+    .stat-label {
+      color: #64748b;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .stat-value {
+      font-size: 1.55rem;
+      font-weight: 900;
+      color: #111827;
+      line-height: 1.2;
+    }
+    .filter-row {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px 6px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      color: #111827;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+    .chip:hover {
+      border-color: color-mix(in srgb, var(--primary-color) 50%, #e5e7eb);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
+      transform: translateY(-1px);
+    }
+    .chip .count {
+      font-weight: 800;
+      color: #64748b;
+      border-left: 1px solid #e5e7eb;
+      padding-left: 8px;
+    }
+    @media (max-width: 900px) {
+      .page-hero {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        align-items: start;
+      }
+      .hero-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+  <section class="page-hero">
+    <div>
+      <h1>Products</h1>
+      <p>
+        Explore Car Light’s product range—built for automotive and heavy-duty applications. Click a
+        category to browse, then open a product for specifications, images, and inquiry.
+      </p>
+    </div>
+    <div class="hero-stats" aria-label="Product overview">
+      <div class="stat">
+        <div class="stat-label">Total Products</div>
+        <div class="stat-value">{products.length}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Categories</div>
+        <div class="stat-value">{(categories ?? []).length}</div>
+      </div>
+    </div>
+  </section>
+
+  {(categories ?? []).length ? (
+    <nav class="filter-row" aria-label="Browse by category">
+      {(categories ?? [])
+        .filter((c): c is CategoryRow & {slug: string} => typeof c.slug === 'string' && c.slug.length > 0)
+        .map((c) => (
+          <a class="chip" href={`/category/${c.slug}`}>
+            <span>{c.title ?? 'Category'}</span>
+            <span class="count">{c.count ?? 0}</span>
+          </a>
+        ))}
+    </nav>
+  ) : null}
+
+  <ProductListing
+    products={products}
+    sectionTitle="All Products"
+    sectionDescription="Professional-grade LED lighting products for B2B partners."
+  />
+</MainLayout>

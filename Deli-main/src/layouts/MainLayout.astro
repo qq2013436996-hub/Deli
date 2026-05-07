@@ -1,0 +1,470 @@
+---
+// src/layouts/MainLayout.astro
+import {sanityClient} from 'sanity:client'
+import {assignCategoryPathSlugs} from '../lib/slugify'
+
+interface Props {
+  title?: string
+}
+
+const settings = await sanityClient.fetch<{
+  companyName: string | null
+  companyDescription: string | null
+  logoUrl: string | null
+  primaryColor: string | null
+  contactEmail: string | null
+  contactPhone: string | null
+  footerText: string | null
+} | null>(`*[_type == "siteSettings"][0]{
+  companyName,
+  companyDescription,
+  "logoUrl": logo.asset->url,
+  primaryColor,
+  contactEmail,
+  contactPhone,
+  footerText
+}`)
+
+const hexOk = (v: string | null | undefined) =>
+  typeof v === 'string' && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(v.trim())
+
+const themeColor = hexOk(settings?.primaryColor) ? settings!.primaryColor!.trim() : '#ff6600'
+
+const displayName = settings?.companyName?.trim() || 'Car Light'
+
+const defaultPageTitle = `${displayName} | B2B LED Solutions`
+const {title = defaultPageTitle} = Astro.props
+
+const footerBlurb =
+  settings?.companyDescription?.trim() ||
+  'Professional manufacturer of high-performance LED working lights for agricultural, construction, and mining vehicles.'
+
+const footerEmail = settings?.contactEmail?.trim() || 'info@example.com'
+const footerPhone = settings?.contactPhone?.trim() || ''
+
+type FooterCategoryRow = {
+  _id: string
+  title: string | null
+  slug: string | null
+}
+
+const footerCategoryRows = await sanityClient.fetch<FooterCategoryRow[]>(
+  `*[_type == "productCategory"] | order(title asc)[0...6] {
+    _id,
+    title,
+    "slug": slug.current
+  }`,
+)
+
+const footerProductLinks = assignCategoryPathSlugs(footerCategoryRows ?? [])
+  .filter((r) => Boolean(r.title && r.pathSlug))
+  .slice(0, 4)
+---
+
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <style
+      is:global
+      define:vars={{
+        themeColor,
+      }}
+    >
+      :root {
+        --primary-color: var(--themeColor);
+        --text-main: #111827;
+        --text-muted: #6b7280;
+        --bg-light: #f3f4f6;
+        --border-color: #e5e7eb;
+      }
+
+      body {
+        font-family:
+          'Inter',
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f9fafb;
+        color: #111827;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .site-header {
+        background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+        color: #f8fafc;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.24);
+        box-shadow: 0 8px 20px rgba(2, 6, 23, 0.22);
+      }
+      .header-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+      .site-brand {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: inherit;
+      }
+      .site-logo-img {
+        display: block;
+        height: 34px;
+        width: auto;
+        max-width: 220px;
+        object-fit: contain;
+      }
+      .site-logo-text {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: var(--primary-color);
+        text-decoration: none;
+        letter-spacing: -0.02em;
+      }
+      .main-nav {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 20px;
+      }
+      .nav-item {
+        position: relative;
+      }
+      .main-nav a {
+        color: #cbd5e1;
+        text-decoration: none;
+        font-size: 0.92rem;
+        font-weight: 650;
+        transition: color 0.2s ease;
+      }
+      .main-nav a:hover {
+        color: #ffffff;
+      }
+      .dropdown-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .dropdown-toggle::after {
+        content: '▾';
+        font-size: 0.72rem;
+        opacity: 0.8;
+      }
+      .dropdown-menu {
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 0;
+        min-width: 224px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.14);
+        padding: 8px;
+        z-index: 40;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(6px);
+        transition:
+          opacity 0.2s ease,
+          transform 0.2s ease,
+          visibility 0.2s ease;
+      }
+      .dropdown-menu a {
+        color: #4b5563;
+        display: block;
+        padding: 8px 10px;
+        border-radius: 7px;
+        font-size: 0.88rem;
+        font-weight: 650;
+      }
+      .dropdown-menu a:hover {
+        background: #f3f4f6;
+        color: var(--primary-color);
+      }
+      .dropdown-divider {
+        height: 1px;
+        background: #e5e7eb;
+        margin: 8px 0;
+      }
+      .nav-item:hover .dropdown-menu,
+      .nav-item:focus-within .dropdown-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+      .btn-quote-nav {
+        background-color: var(--primary-color);
+        color: white !important;
+        padding: 8px 18px;
+        border-radius: 6px;
+        font-weight: 800;
+        transition: filter 0.2s ease;
+      }
+      .btn-quote-nav:hover {
+        filter: brightness(0.92);
+      }
+
+      .site-content {
+        flex-grow: 1;
+      }
+
+      .site-footer {
+        background:
+          repeating-linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0.03) 0,
+            rgba(255, 255, 255, 0.03) 1px,
+            transparent 1px,
+            transparent 32px
+          ),
+          linear-gradient(180deg, #0a1020 0%, #070b14 100%);
+        color: #9ca3af;
+        padding: 36px 20px 28px;
+        margin-top: 60px;
+        border-top: 4px solid var(--primary-color);
+      }
+      .footer-cta {
+        max-width: 1200px;
+        margin: 0 auto 40px;
+        text-align: center;
+        padding: 48px 20px 40px;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+      }
+      .footer-cta h2 {
+        margin: 0 0 10px;
+        color: #ffffff;
+        font-size: clamp(1.7rem, 2.6vw, 2.3rem);
+        font-weight: 900;
+        letter-spacing: -0.02em;
+      }
+      .footer-cta p {
+        margin: 0 auto 20px;
+        color: #cbd5e1;
+        max-width: 62ch;
+        line-height: 1.7;
+      }
+      .footer-cta-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .footer-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 11px 16px;
+        border-radius: 8px;
+        font-weight: 800;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+      }
+      .footer-btn.primary {
+        background: var(--primary-color);
+        color: #fff;
+      }
+      .footer-btn.primary:hover {
+        filter: brightness(0.95);
+      }
+      .footer-btn.secondary {
+        border: 1px solid rgba(203, 213, 225, 0.35);
+        color: #e2e8f0;
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .footer-btn.secondary:hover {
+        border-color: #e2e8f0;
+      }
+      .footer-cta-tags {
+        margin-top: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 14px;
+      }
+      .footer-cta-tags span {
+        color: #94a3b8;
+        font-size: 0.8rem;
+        font-weight: 700;
+      }
+      .footer-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1.2fr 1fr 1fr;
+        gap: 40px;
+        margin-bottom: 40px;
+      }
+      .footer-title {
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+      }
+      .site-footer p,
+      .site-footer a {
+        color: #9ca3af;
+        text-decoration: none;
+        margin-bottom: 10px;
+        display: block;
+        font-size: 0.9rem;
+      }
+      .footer-link-list a:hover {
+        color: #f8fafc;
+      }
+      .footer-bottom {
+        text-align: center;
+        border-top: 1px solid rgba(148, 163, 184, 0.2);
+        padding-top: 20px;
+        font-size: 0.85rem;
+      }
+      @media (max-width: 900px) {
+        .footer-container {
+          grid-template-columns: 1fr;
+          gap: 26px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-container">
+        <a href="/" class="site-brand">
+          {
+            settings?.logoUrl ? (
+              <img
+                class="site-logo-img"
+                src={settings.logoUrl}
+                alt={displayName}
+                height="40"
+                loading="eager"
+              />
+            ) : (
+              <span class="site-logo-text">{displayName}</span>
+            )
+          }
+        </a>
+        <nav class="main-nav">
+          <a href="/">Home</a>
+          <a href="/introduction">Introduction</a>
+          <div class="nav-item">
+            <a href="/products" class="dropdown-toggle">Products</a>
+            <div class="dropdown-menu" role="menu" aria-label="Products menu">
+              {
+                footerProductLinks.length ? (
+                  footerProductLinks.map((item) => (
+                    <a href={`/category/${item.pathSlug}`} role="menuitem">
+                      {item.title}
+                    </a>
+                  ))
+                ) : (
+                  <>
+                    <a href="/products" role="menuitem">Audi</a>
+                    <a href="/products" role="menuitem">BMW</a>
+                    <a href="/products" role="menuitem">Mercedes-Benz</a>
+                    <a href="/products" role="menuitem">Honda</a>
+                  </>
+                )
+              }
+              <div class="dropdown-divider"></div>
+              <a href="/products">All Products</a>
+            </div>
+          </div>
+          <a href="/about">About Us</a>
+          <a href="/request-quote">Contact Us</a>
+          <a href="/request-quote" class="btn-quote-nav">Get a Quote</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="site-content">
+      <slot />
+    </div>
+
+    <footer class="site-footer">
+      <section class="footer-cta">
+        <h2>Ready to Work With Us?</h2>
+        <p>
+          Whether you need a standard product or a customized OEM solution, our team is ready to support
+          your next project.
+        </p>
+        <div class="footer-cta-actions">
+          <a href="/request-quote" class="footer-btn primary">Contact Our Team</a>
+          <a href="/products" class="footer-btn secondary">Ask for a Sample</a>
+        </div>
+        <div class="footer-cta-tags">
+          <span>✓ 3-Year Warranty</span>
+          <span>✓ CE / RoHS / E-Mark Certified</span>
+          <span>✓ Free Sample Available</span>
+          <span>✓ Reply Within 24 Hours</span>
+        </div>
+      </section>
+      <div class="footer-container">
+        <div>
+          <h3 class="footer-title">{displayName}</h3>
+          <p>{footerBlurb}</p>
+        </div>
+        <div>
+          <h3 class="footer-title">Products</h3>
+          <div class="footer-link-list">
+            <a href="/products">All Products</a>
+            {
+              footerProductLinks.length ? (
+                footerProductLinks.map((item) => (
+                  <a href={`/category/${item.pathSlug}`}>{item.title}</a>
+                ))
+              ) : (
+                <>
+                  <a href="/products">Audi</a>
+                  <a href="/products">BMW</a>
+                  <a href="/products">Mercedes-Benz</a>
+                  <a href="/products">Honda</a>
+                </>
+              )
+            }
+          </div>
+        </div>
+        <div>
+          <h3 class="footer-title">Contact Us</h3>
+          <p>
+            Email:{' '}
+            <a href={`mailto:${footerEmail}`}>{footerEmail}</a>
+          </p>
+          {
+            footerPhone ? (
+              <p>
+                Phone:{' '}
+                <a href={`tel:${footerPhone.replace(/\s/g, '')}`}>{footerPhone}</a>
+              </p>
+            ) : (
+              <p>Phone: —</p>
+            )
+          }
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>
+          {
+            settings?.footerText?.trim() ||
+              `© ${new Date().getFullYear()} ${displayName}. All rights reserved.`
+          }
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

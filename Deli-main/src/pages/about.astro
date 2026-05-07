@@ -1,0 +1,378 @@
+---
+import MainLayout from '../layouts/MainLayout.astro'
+import {sanityClient} from 'sanity:client'
+
+const settings = await sanityClient.fetch<{
+  companyName: string | null
+  companyDescription: string | null
+  companyImageUrls: string[] | null
+} | null>(`*[_type == "siteSettings"][0]{
+  companyName,
+  companyDescription,
+  "companyImageUrls": companyImages[].asset->url
+}`)
+
+const companyName = settings?.companyName?.trim() || 'Deli Group'
+const pageTitle = `About Us | ${companyName}`
+const topImages = [
+  'https://www.deliworld.com/uploads/image/20220831/17/deli-factory-and-production.jpg',
+  'https://www.deliworld.com/uploads/image/20220831/18/deli-manufacturing.jpg',
+  'https://www.deliworld.com/uploads/image/20220901/08/deli-intelligent-logistics.jpg',
+]
+
+const aboutSections = [
+  {
+    title: '1. Brand Overview & Industry Position',
+    points: [
+      'Foundation & Headquarters: Founded in 1981 by Lou Fujun, Deli is headquartered in Ningbo, Zhejiang Province, China.',
+      'Market Position: Deli is currently the largest comprehensive stationery and office supplies manufacturer in Asia. The company has been consecutively listed among the Top 500 Chinese Private Enterprises and Top 500 Chinese Manufacturing Enterprises.',
+      'Corporate Mission: Committed to becoming the advocate and leader of comprehensive solutions for diverse work and study scenarios.',
+    ],
+  },
+  {
+    title: '2. Extensive Product Portfolio & Brand Matrix',
+    points: [
+      'Deli has evolved from a traditional stationery brand into a multi-category industrial and technology group covering 24 major product categories.',
+      'Deli Office / Deli Stationery: Writing instruments, file management, paper products, office equipment, and consumables.',
+      'Deli Tools: A fast-growing global brand focused on hand tools, power tools, and measuring instruments.',
+      'Agnite: A dedicated brand for sporting goods and fitness equipment.',
+      'Nusign: A lifestyle brand for younger users, featuring minimalist and modern desktop products.',
+    ],
+  },
+  {
+    title: '3. R&D Capabilities & Global Expansion',
+    points: [
+      'Global Design: Deli invests heavily in innovation and industrial design with major R&D and design centers in Shanghai, Seoul, and Tokyo.',
+      'Robust Supply Chain: Deli operates multiple large-scale smart manufacturing bases and is expanding overseas capacity, including a recent investment of over $200 million in Vietnam.',
+      'Global Market Presence: Deli products are exported to over 130 countries and regions, with regional branches and distribution networks in Indonesia, India, Malaysia, Russia, and the Middle East.',
+      'In 2019, Deli became an official supplier to the United Nations Population Fund (UNFPA).',
+    ],
+  },
+  {
+    title: '4. Business Model & Digital Transformation',
+    points: [
+      'Deli has transitioned from a pure manufacturer to an integrated service provider.',
+      'Beyond mainstream B2C platforms such as Amazon, Tmall, and JD.com, Deli has rapidly expanded its B2B centralized procurement business.',
+      'The company has built a comprehensive B2B platform delivering one-stop office supply chain solutions for government agencies, state-owned enterprises, and multinational corporations.',
+    ],
+  },
+]
+---
+
+<MainLayout title={pageTitle}>
+  <style>
+    .about-wrap {
+      padding-bottom: 70px;
+    }
+    .top-gallery {
+      max-width: 980px;
+      margin: 22px auto 0;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 1.25fr 1fr 1fr;
+      gap: 10px;
+    }
+    .top-gallery figure {
+      margin: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.07);
+      min-height: 150px;
+      opacity: 0;
+      transform: translateY(14px);
+      transition:
+        opacity 0.55s ease,
+        transform 0.55s ease;
+    }
+    .top-gallery figure.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .top-gallery img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transform: scale(1.01);
+      transition: transform 0.35s ease;
+    }
+    .top-gallery figure:hover img {
+      transform: scale(1.05);
+    }
+    .stats-bar {
+      background: #ef3b2d;
+      color: #fff;
+      margin-top: 18px;
+    }
+    .stats-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 18px 20px;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 20px;
+      text-align: center;
+    }
+    .stat-item {
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+    .stat-item.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .stat-num {
+      font-size: 2rem;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label {
+      font-size: 0.8rem;
+      opacity: 0.92;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 44px 20px 0;
+    }
+    .section-title {
+      margin: 0 0 18px;
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 900;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+      position: relative;
+      padding-bottom: 10px;
+    }
+    .section-title::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0;
+      width: 52px;
+      height: 3px;
+      border-radius: 999px;
+      background: #ef3b2d;
+    }
+    .story p {
+      margin: 0 0 16px;
+      color: #374151;
+      line-height: 1.85;
+      font-size: 1rem;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .story p.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .journey {
+      margin-top: 44px;
+    }
+    .timeline {
+      position: relative;
+      margin: 6px 0 0;
+      padding-left: 28px;
+      list-style: none;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 9px;
+      top: 2px;
+      bottom: 2px;
+      width: 2px;
+      background: #e5e7eb;
+    }
+    .timeline li {
+      position: relative;
+      padding: 0 0 24px 0;
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .timeline li.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .timeline li::before {
+      content: '';
+      position: absolute;
+      left: -22px;
+      top: 4px;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #ef3b2d;
+      box-shadow: 0 0 0 4px #fff;
+      transition: transform 0.25s ease;
+    }
+    .timeline li:hover::before {
+      transform: scale(1.18);
+    }
+    .year {
+      font-size: 0.82rem;
+      color: #ef3b2d;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .item-text {
+      color: #334155;
+      line-height: 1.75;
+      font-size: 0.96rem;
+    }
+    @media (max-width: 768px) {
+      .top-gallery {
+        grid-template-columns: 1fr;
+      }
+      .top-gallery figure {
+        min-height: 130px;
+      }
+      .stats-inner {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .section-title {
+        font-size: 1.7rem;
+      }
+    }
+
+  </style>
+
+  <div class="about-wrap">
+    <section class="top-gallery" aria-label="Company images">
+      {topImages.map((url, i) => (
+        <figure class="animate-in" style={`transition-delay: ${i * 120}ms;`}>
+          <img src={url} alt={`${companyName} showcase image ${i + 1}`} loading="lazy" />
+        </figure>
+      ))}
+    </section>
+
+    <section class="stats-bar" aria-label="Company stats">
+      <div class="stats-inner">
+        <div class="stat-item animate-in" style="transition-delay: 0ms;">
+          <div class="stat-num count-up" data-target="8" data-suffix="">8</div>
+          <div class="stat-label">Industries</div>
+        </div>
+        <div class="stat-item animate-in" style="transition-delay: 80ms;">
+          <div class="stat-num count-up" data-target="12" data-suffix="">12</div>
+          <div class="stat-label">Smart Factories</div>
+        </div>
+        <div class="stat-item animate-in" style="transition-delay: 140ms;">
+          <div class="stat-num count-up" data-target="18000" data-suffix="+">18000+</div>
+          <div class="stat-label">Employees</div>
+        </div>
+        <div class="stat-item animate-in" style="transition-delay: 200ms;">
+          <div class="stat-num count-up" data-target="750000" data-suffix="+ m²">750000+ m²</div>
+          <div class="stat-label">Manufacturing Plant</div>
+        </div>
+        <div class="stat-item animate-in" style="transition-delay: 260ms;">
+          <div class="stat-num">Top1</div>
+          <div class="stat-label">Office & School Brand in China</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="container">
+      <section class="story" aria-label="Our story">
+        <h2 class="section-title">Company Overview: Deli Group</h2>
+        <p class="animate-in" style="transition-delay: 30ms;">
+          Deli Group is not only a household name for stationery in China but also a world-leading integrated supplier of office and student supplies.
+        </p>
+      </section>
+
+      <section class="journey" aria-label="Our journey">
+        <h2 class="section-title">Core Business & Global Footprint</h2>
+        {aboutSections.map((section, sectionIndex) => (
+          <div style="margin-bottom: 26px;">
+            <p class="animate-in" style={`font-weight: 800; margin-bottom: 10px; transition-delay: ${sectionIndex * 80}ms;`}>
+              {section.title}
+            </p>
+            <ul class="timeline">
+              {section.points.map((point) => (
+                <li class="animate-in">
+                  <div class="item-text">{point}</div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </section>
+    </div>
+  </div>
+
+  <script is:inline>
+    ;(function () {
+      var animated = document.querySelectorAll('.animate-in')
+      function reveal(node) {
+        node.classList.add('visible')
+      }
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                reveal(entry.target)
+                io.unobserve(entry.target)
+              }
+            })
+          },
+          {threshold: 0.15},
+        )
+        animated.forEach(function (n) {
+          io.observe(n)
+        })
+      } else {
+        animated.forEach(reveal)
+      }
+
+      // count-up animation for top stats
+      function animateCount(el) {
+        var target = Number(el.getAttribute('data-target') || '0')
+        var suffix = el.getAttribute('data-suffix') || '+'
+        if (!target) return
+        var start = 0
+        var duration = 900
+        var t0 = performance.now()
+        function step(t) {
+          var p = Math.min((t - t0) / duration, 1)
+          var eased = 1 - Math.pow(1 - p, 3)
+          var value = Math.round(start + (target - start) * eased)
+          el.textContent = value + suffix
+          if (p < 1) requestAnimationFrame(step)
+        }
+        requestAnimationFrame(step)
+      }
+      document.querySelectorAll('.count-up').forEach(function (el) {
+        var started = false
+        if ('IntersectionObserver' in window) {
+          var io2 = new IntersectionObserver(
+            function (entries) {
+              entries.forEach(function (entry) {
+                if (entry.isIntersecting && !started) {
+                  started = true
+                  animateCount(el)
+                  io2.unobserve(el)
+                }
+              })
+            },
+            {threshold: 0.5},
+          )
+          io2.observe(el)
+        } else {
+          animateCount(el)
+        }
+      })
+    })()
+  </script>
+</MainLayout>
