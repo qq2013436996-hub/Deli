@@ -12,42 +12,49 @@ const settings = await sanityClient.fetch<{
   "companyImageUrls": companyImages[].asset->url
 }`)
 
-const companyName = settings?.companyName?.trim() || 'Car Light'
-const description = settings?.companyDescription?.trim() || ''
+const companyName = settings?.companyName?.trim() || 'Deli Group'
 const pageTitle = `About Us | ${companyName}`
-const introText =
-  description ||
-  `${companyName} develops automotive lighting products for OEM, wholesalers, and distributors. We focus on practical engineering, stable quality, and clear communication from sampling to mass production.`
 const topImages = [
-  'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1400&q=80',
-  'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=1400&q=80',
-  'https://images.unsplash.com/photo-1486006920555-c77dcf18193c?auto=format&fit=crop&w=1400&q=80',
+  'https://www.deliworld.com/uploads/image/20220831/17/deli-factory-and-production.jpg',
+  'https://www.deliworld.com/uploads/image/20220831/18/deli-manufacturing.jpg',
+  'https://www.deliworld.com/uploads/image/20220901/08/deli-intelligent-logistics.jpg',
 ]
 
-const timeline = [
+const aboutSections = [
   {
-    year: '2010',
-    text: 'Started with vibration-resistant LED work lights for industrial and utility applications.',
+    title: '1. Brand Overview & Industry Position',
+    points: [
+      'Foundation & Headquarters: Founded in 1981 by Lou Fujun, Deli is headquartered in Ningbo, Zhejiang Province, China.',
+      'Market Position: Deli is currently the largest comprehensive stationery and office supplies manufacturer in Asia. The company has been consecutively listed among the Top 500 Chinese Private Enterprises and Top 500 Chinese Manufacturing Enterprises.',
+      'Corporate Mission: Committed to becoming the advocate and leader of comprehensive solutions for diverse work and study scenarios.',
+    ],
   },
   {
-    year: '2013',
-    text: 'Expanded product range to include driving lights and warning lights for commercial vehicles.',
+    title: '2. Extensive Product Portfolio & Brand Matrix',
+    points: [
+      'Deli has evolved from a traditional stationery brand into a multi-category industrial and technology group covering 24 major product categories.',
+      'Deli Office / Deli Stationery: Writing instruments, file management, paper products, office equipment, and consumables.',
+      'Deli Tools: A fast-growing global brand focused on hand tools, power tools, and measuring instruments.',
+      'Agnite: A dedicated brand for sporting goods and fitness equipment.',
+      'Nusign: A lifestyle brand for younger users, featuring minimalist and modern desktop products.',
+    ],
   },
   {
-    year: '2016',
-    text: 'Established structured OEM/ODM workflow for branding, packaging, and model customization.',
+    title: '3. R&D Capabilities & Global Expansion',
+    points: [
+      'Global Design: Deli invests heavily in innovation and industrial design with major R&D and design centers in Shanghai, Seoul, and Tokyo.',
+      'Robust Supply Chain: Deli operates multiple large-scale smart manufacturing bases and is expanding overseas capacity, including a recent investment of over $200 million in Vietnam.',
+      'Global Market Presence: Deli products are exported to over 130 countries and regions, with regional branches and distribution networks in Indonesia, India, Malaysia, Russia, and the Middle East.',
+      'In 2019, Deli became an official supplier to the United Nations Population Fund (UNFPA).',
+    ],
   },
   {
-    year: '2019',
-    text: 'Scaled production with tighter QC checkpoints and improved thermal/optical validation.',
-  },
-  {
-    year: '2022',
-    text: 'Increased support for Europe and North America projects across multiple vehicle platforms.',
-  },
-  {
-    year: '2024',
-    text: 'Serving partners in 60+ countries with a broad portfolio of automotive lighting products.',
+    title: '4. Business Model & Digital Transformation',
+    points: [
+      'Deli has transitioned from a pure manufacturer to an integrated service provider.',
+      'Beyond mainstream B2C platforms such as Amazon, Tmall, and JD.com, Deli has rapidly expanded its B2B centralized procurement business.',
+      'The company has built a comprehensive B2B platform delivering one-stop office supply chain solutions for government agencies, state-owned enterprises, and multinational corporations.',
+    ],
   },
 ]
 ---
@@ -103,7 +110,7 @@ const timeline = [
       margin: 0 auto;
       padding: 18px 20px;
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 20px;
       text-align: center;
     }
@@ -254,57 +261,52 @@ const timeline = [
     <section class="stats-bar" aria-label="Company stats">
       <div class="stats-inner">
         <div class="stat-item animate-in" style="transition-delay: 0ms;">
-          <div class="stat-num count-up" data-target="15">15+</div>
-          <div class="stat-label">Years in Business</div>
+          <div class="stat-num count-up" data-target="8" data-suffix="">8</div>
+          <div class="stat-label">Industries</div>
         </div>
         <div class="stat-item animate-in" style="transition-delay: 80ms;">
-          <div class="stat-num count-up" data-target="60">60+</div>
-          <div class="stat-label">Countries Served</div>
+          <div class="stat-num count-up" data-target="12" data-suffix="">12</div>
+          <div class="stat-label">Smart Factories</div>
         </div>
         <div class="stat-item animate-in" style="transition-delay: 140ms;">
-          <div class="stat-num count-up" data-target="200">200+</div>
-          <div class="stat-label">Product Models</div>
+          <div class="stat-num count-up" data-target="18000" data-suffix="+">18000+</div>
+          <div class="stat-label">Employees</div>
         </div>
         <div class="stat-item animate-in" style="transition-delay: 200ms;">
-          <div class="stat-num count-up" data-target="500">500+</div>
-          <div class="stat-label">OEM Clients</div>
+          <div class="stat-num count-up" data-target="750000" data-suffix="+ m²">750000+ m²</div>
+          <div class="stat-label">Manufacturing Plant</div>
+        </div>
+        <div class="stat-item animate-in" style="transition-delay: 260ms;">
+          <div class="stat-num">Top1</div>
+          <div class="stat-label">Office & School Brand in China</div>
         </div>
       </div>
     </section>
 
     <div class="container">
       <section class="story" aria-label="Our story">
-        <h2 class="section-title">Our Story</h2>
+        <h2 class="section-title">Company Overview: Deli Group</h2>
         <p class="animate-in" style="transition-delay: 30ms;">
-          {companyName} focuses on automotive lighting products, including LED headlights, work lights,
-          driving lights, and warning lights for global aftermarket and OEM projects.
+          Deli Group is not only a household name for stationery in China but also a world-leading integrated supplier of office and student supplies.
         </p>
-        <p class="animate-in" style="transition-delay: 100ms;">
-          Our core team has long-term experience in optics, thermal design, and manufacturing execution.
-          We support customized programmes for vehicle platforms such as Audi, BMW, Mercedes-Benz, and
-          more based on customer requirements.
-        </p>
-        <p class="animate-in" style="transition-delay: 170ms;">
-          From sample validation to batch delivery, we prioritize consistency, practical engineering, and
-          clear communication so partners can launch reliable products with lower risk.
-        </p>
-        {introText ? (
-          <p class="animate-in" style="transition-delay: 240ms;">
-            {introText}
-          </p>
-        ) : null}
       </section>
 
       <section class="journey" aria-label="Our journey">
-        <h2 class="section-title">Our Journey</h2>
-        <ul class="timeline">
-          {timeline.map((item) => (
-            <li class="animate-in">
-              <div class="year">{item.year}</div>
-              <div class="item-text">{item.text}</div>
-            </li>
-          ))}
-        </ul>
+        <h2 class="section-title">Core Business & Global Footprint</h2>
+        {aboutSections.map((section, sectionIndex) => (
+          <div style="margin-bottom: 26px;">
+            <p class="animate-in" style={`font-weight: 800; margin-bottom: 10px; transition-delay: ${sectionIndex * 80}ms;`}>
+              {section.title}
+            </p>
+            <ul class="timeline">
+              {section.points.map((point) => (
+                <li class="animate-in">
+                  <div class="item-text">{point}</div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </section>
     </div>
   </div>
@@ -337,6 +339,7 @@ const timeline = [
       // count-up animation for top stats
       function animateCount(el) {
         var target = Number(el.getAttribute('data-target') || '0')
+        var suffix = el.getAttribute('data-suffix') || '+'
         if (!target) return
         var start = 0
         var duration = 900
@@ -345,7 +348,7 @@ const timeline = [
           var p = Math.min((t - t0) / duration, 1)
           var eased = 1 - Math.pow(1 - p, 3)
           var value = Math.round(start + (target - start) * eased)
-          el.textContent = value + '+'
+          el.textContent = value + suffix
           if (p < 1) requestAnimationFrame(step)
         }
         requestAnimationFrame(step)
