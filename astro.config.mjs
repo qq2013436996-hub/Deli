@@ -8,7 +8,7 @@ export default defineConfig({
   adapter: vercel(),
   integrations: [
     sanity({
-      projectId: 'wqqoh78j',
+      projectId: 'm9yu1wff',
       dataset: 'production',
       useCdn: true,
       apiVersion: '2024-05-02',
